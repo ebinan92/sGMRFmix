@@ -14,12 +14,13 @@ using namespace arma;
 void compute_anomaly_score(const Mat<double> &X,  // (N x M)
                            const Cube<double> &A, // (M x M x K)
                            const Mat<double> &m, // (K x M)
-                           const Mat<double> &g_mat, // (N x K)
+                        //    const Mat<double> &g_mat, // (N x K)
+                           Mat<double> &theta, // (M x K)
                            // Return arguments
                            Mat<double> &anomaly_score, // (N, M)
                            bool verbose = false){
 
-    int N = X.n_rows, M = X.n_cols, K = g_mat.n_cols;
+    int N = X.n_rows, M = X.n_cols, K = theta.n_cols;
 
     Cube<double> U(N, M, K, fill::zeros),
                  W(N, M, K, fill::zeros);
@@ -44,11 +45,28 @@ void compute_anomaly_score(const Mat<double> &X,  // (N x M)
         }
     }
 
+    // Compute the Gating function (Posterior Distribution)
+    // Equation (17) in section 3.2
+    Mat<double> g_unnorm(N, K, fill::zeros);
+    Mat<double> g_mat(N, K, fill::zeros);
+    // assert(g_mat.is_finite() && "GMRF GMat has NANs.");
+
     // Equation (22) in section 3.3
     anomaly_score.resize(N, M);
     vec score(N, fill::zeros);
     for(int i=0; i < M; ++i){
         score.fill(0.0);
+        // for (int i=0; i< M; ++i){
+        for(int k =0; k < K; ++k) {
+            g_unnorm.col(k) = theta(k) * normpdf(X.col(i),
+                                                            U.slice(k).col(i),
+                                                            W.slice(k).col(i));
+            g_mat.col(k) = g_unnorm.col(k);
+        }
+        // }
+        vec denom = sum(g_mat, 1); // Sum each row
+        g_mat.each_col() /= (denom + 1e-8);
+
         for(int k=0; k < K; ++k){
             score += g_mat.col(k) % normpdf(X.col(i),
                                             U.slice(k).col(i),
@@ -58,7 +76,7 @@ void compute_anomaly_score(const Mat<double> &X,  // (N x M)
     }
     auto end = sc.now();
     auto time_span = static_cast<std::chrono::duration<double>>(end - start);
-    std::cout <<termcolor::blue<<"Operation took: " << time_span.count() << " seconds"<<endl;
+    // std::cout <<termcolor::blue<<"Operation took: " << time_span.count() << " seconds"<<endl;
     if(verbose){
         std::cout<<termcolor::blue<<"=================================================="<<endl;
     }

@@ -26,6 +26,7 @@ void sGMRFmix(const Mat<double> &X, // (N, M)
               Mat<double> &g_mat, // (N , K)
               rowvec &result_pi,
               ucolvec &mode,
+              Mat<double> &log_theta_mat, // (M , K)
               // Misc arguments
               bool do_kmeans=false,
               double pi_threshold = 0.01,
@@ -90,7 +91,9 @@ void sGMRFmix(const Mat<double> &X, // (N, M)
 
     // Placeholders for GMRF results
     g_mat.set_size(N, new_K);
-    Mat<double> log_theta_mat(M, new_K, fill::zeros);
+    // Mat<double> log_theta_mat(M, new_K, fill::zeros);
+    log_theta_mat.set_size(M, new_K);
+    log_theta_mat.fill(0.0);
 
     Cube<double> U(N, M, new_K, fill::zeros),
                  W(N, M, new_K, fill::zeros);

@@ -132,7 +132,7 @@ py::tuple py_sGMRFmix(
     if (init_K > train_data.shape()[0] ) throw std::runtime_error("init_K must be <= # of rows in train data");
 
     arma::cube A;
-    arma::mat m,g_mat;
+    arma::mat m,g_mat, theta;
     arma::rowvec pi;
     arma::ucolvec mode;
 
@@ -148,6 +148,7 @@ py::tuple py_sGMRFmix(
             g_mat,
             pi,
             mode,
+            theta,
             false,
             pi_threshold,
             lambda0,
@@ -159,18 +160,21 @@ py::tuple py_sGMRFmix(
     // Convert armadillo objects back to numpy objects
     auto m_ = mat_to_arr(m);
     auto g_mat_ = mat_to_arr(g_mat);
+    auto theta_ = mat_to_arr(theta);
     auto A_ = cube_to_arr(A);
     auto pi_ = rowvec_to_arr(pi);
     auto mode_ = vec_to_arr(mode);
 
-    return py::make_tuple(A_, m_, g_mat_, pi_, mode_);
+    return py::make_tuple(A_, m_, g_mat_, pi_, mode_, theta_);
 }
+
 
 py::tuple py_compute_anomaly(
         py::array_t<double, py::array::f_style> &test_data,
         py::array_t<double, py::array::f_style> &A,
         py::array_t<double, py::array::f_style> &m,
-        py::array_t<double, py::array::f_style> &g_mat,
+        // py::array_t<double, py::array::f_style> &g_mat,
+        py::array_t<double, py::array::f_style> &theta,
         bool verbose = false
         ){
 
@@ -181,15 +185,16 @@ py::tuple py_compute_anomaly(
     // Convert pybind wrappers around STL to armadillo objects
     arma::mat X = arr_to_mat(test_data);
     arma::mat _m = arr_to_mat(m);
-    arma::mat _g_mat = arr_to_mat(g_mat);
+    // arma::mat _g_mat = arr_to_mat(g_mat);
     arma::cube A_ = arr_to_cube(A);
+    arma::mat _theta = arr_to_mat(theta);
 
 //    cout<<arma::size(X)<<endl
 //        <<arma::size(_m)<<endl
 //        <<arma::size(_g_mat)<<endl
 //        <<arma::size(A_)<<endl;
 //    A_.print("A=");
-    compute_anomaly_score(X, A_, _m, _g_mat, anomaly_score, verbose);
+    compute_anomaly_score(X, A_, _m, _theta, anomaly_score, verbose);
 
     auto anomaly = mat_to_arr(anomaly_score);
     return py::make_tuple(anomaly);

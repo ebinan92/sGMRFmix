@@ -72,6 +72,7 @@ class sGMRFmix:
         self.model_param['gating_matrix'] = results[2]
         self.model_param['pi'] = results[3][:results[0].shape[2]]
         self.model_param['mode'] = results[4]
+        self.model_param['theta'] = results[5]
 
     def compute_anomaly(self, test_data:np.ndarray):
         N, M = test_data.shape
@@ -81,7 +82,8 @@ class sGMRFmix:
         results = sgm.compute_anomaly_(test_data,
                                       self.model_param['precision_matrices'],
                                       self.model_param['mean_vectors'],
-                                      self.model_param['gating_matrix'],
+                                    #   self.model_param['gating_matrix'],
+                                      self.model_param['theta'],
                                       self.verbose)[0]
         return results
 

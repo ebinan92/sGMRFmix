@@ -16,71 +16,20 @@ The follwing plot shows the performance comparison with the only [`sGMRFmix`](ht
  
 ![sGMRFmix Model](https://github.com/AntixK/sGMRFmix/blob/dev/assets/sgmrf_comparison.png)
 
-## Installation
+## Installation for google colaboratory
+### install armadillo-10.2.1
+download armadillo-10.2.1 https://osdn.net/frs/g_redir.php?m=jaist&f=arma%2Farmadillo-10.2.1.tar.xz 
 
-### Requirements
-- Python >= 3.6 (For Python Thread-Specific-Storage (TSS) API used by pybind11)
-- Numpy >= 1.16.5
-
-### Binaries
-Check out the releases of this repo for wheels for various platforms.
-Install the wheel using pip inside your python environment.
 ```
-pip install sgmrfmix-<platform/other tags>.whl
+cd armadillo-10.2.1
+make install
 ```
-
-
-### Build from source
-For Linux
+### install sgmrfmix
 ```
-sudo apt-get update
-sudo apt-get install libopenblas-dev liblapack-dev libarpack2-dev libsuperlu-dev
-sudo apt install libarmadillo-dev libboost-all-dev build-essential
-```
-
-For Mac
-```
-brew install cmake pkg-config boost openblas 
-brew install armadillo 
-```
-
-Clone the repository (including the pybind11 submodule) into a suitable directory
-```
-git clone --recursive git@github.com:AntixK/sGMRFmix.git
 cd sGMRFmix
-```
-Build the C++ files
-```
-cd build
-cmake ..
-make
-```
-Install requirements and build the library.
-Optionally create a python virtual environment to install the library.
-```
-cd ..
-pip install -r requirements.txt
-python setup.py install
-
-pip install auditwheel
-auditwheel show dist/sgmrfmix-0.1-cp37-cp37m-linux_x86_64.whl
-auditwheel repair --plat linux_x86_64  dist/sgmrfmix-0.1-cp37-cp37m-linux_x86_64.whl
-
-## Usage
-```python
-import numpy as np
-from sgmrfmix import sGMRFmix
-
-m = sGMRFmix(K = 5, rho=0.8)
-train = np.genfromtxt('train.csv', delimiter=',', skip_header=True)[:, 1:]
-test = np.genfromtxt('test.csv', delimiter=',', skip_header=True)[:, 1:]
-
-m.fit(train)
-m.show_model_params()
-results = m.compute_anomaly(test)
+python3 setup.py install
 ```
 
-Check out further examples in the `Examples/` folder.
 
 
 ## Acknowledgements

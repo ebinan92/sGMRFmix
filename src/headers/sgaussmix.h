@@ -121,8 +121,9 @@ void sparseGaussMix(const mat &X, // (N x M)
     // Do Graphical LASSO
     for(int k=0; k < K; ++k){
         Lambda.slice(k) = GLasso(Sigma.slice(k), 0.1, verbose);            // Precision Matrix
-//        invLambda.slice(k) = inv(trimatu(chol(Lambda.slice(k)))); // Covariance Matrix
+        // invLambda.slice(k) = inv(trimatu(chol(Lambda.slice(k)))); // Covariance Matrix
         invLambda.slice(k) = inv(Lambda.slice(k)); // Covariance Matrix
+        to_symmetric(invLambda.slice(k));
 
     }
 
@@ -222,9 +223,9 @@ void sparseGaussMix(const mat &X, // (N x M)
         for(int k=0; k < K; ++k){
 //            std::cout<<termcolor::green<<"Computing Lambda "<<k<<endl;
 
-            Lambda.slice(k) = GLasso(Q.slice(k), rho/Nk(k));          // Precision Matrix
+            Lambda.slice(k) = GLasso(Q.slice(k), (rho /Nk(k) + rho));          // Precision Matrix. add rho to rho/NK(K) for numerical stability
 
-            if (rcond(Lambda.slice(k)) < 0.01){  // Handle the case for singular matrix
+            if (rcond(Lambda.slice(k)) < 1e-10){  // Handle the case for singular matrix
                 std::cout<<termcolor::red<<"Warning! Lambda at slice "<<k<<" is ill-conditioned!"<<endl;
                 invLambda.slice(k) = pinv(Lambda.slice(k)); //Q.slice(k);
             } else {
